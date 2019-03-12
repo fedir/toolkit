@@ -3,6 +3,8 @@ package httptool
 import (
 	"bufio"
 	"bytes"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -16,33 +18,38 @@ func Request(url string) ([]byte, int, error) {
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Fatal("Cannont prepare the HTTP request", err)
+		return nil, http.StatusServiceUnavailable, err
 	}
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		log.Fatal("Cannot process the HTTP request", err)
+		return nil, http.StatusServiceUnavailable, err
 	}
 
 	defer resp.Body.Close()
 	body, err := httputil.DumpResponse(resp, true)
 	if err != nil {
-		log.Fatal("Cannont dump the body of HTTP response", err)
+		return nil, http.StatusServiceUnavailable, err
 	}
-	statusProcessing(resp.StatusCode, url)
+	err = statusProcessing(resp.StatusCode, url)
+	if err != nil {
+		return nil, http.StatusServiceUnavailable, err
+	}
 	return body, resp.StatusCode, err
 }
 
-func statusProcessing(statusCode int, url string) {
+func statusProcessing(statusCode int, url string) error {
 	switch statusCode {
 	case http.StatusForbidden:
 		log.Fatalf("Looks like the rate limit is exceeded, please try again later")
+		return nil
 	case http.StatusAccepted:
 		log.Printf("Looks like the server need some time to prepare request.")
+		return nil
 	case http.StatusOK:
-		return
+		return nil
 	default:
-		log.Fatalf("The status code of URL %s is not OK : %d", url, statusCode)
+		return errors.New(fmt.Sprintf("The status code of URL %s is not OK : %d", url, statusCode))
 	}
 }
 
