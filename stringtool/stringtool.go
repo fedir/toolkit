@@ -4,6 +4,6 @@ import (
 	"strings"
 )
 
-func trimSpace(s string) string {
+func TrimSpace(s string) string {
 	return strings.TrimSpace(s)
 }
