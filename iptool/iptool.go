@@ -2,6 +2,7 @@ package iptool
 
 import (
 	"fmt"
+	"github.com/fedir/toolkit/stringtool"
 	"strings"
 
 	"github.com/fedir/toolkit/vartool"
@@ -22,7 +23,7 @@ func ValidateIP(IPs interface{}, IP string, logging bool) bool {
 		return false
 	}
 	for _, ip := range IPsSliced {
-		if ip == IP {
+		if stringtool.TrimSpace(ip) == IP {
 			ipValidated = true
 
 		}
